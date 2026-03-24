@@ -1,5 +1,6 @@
 // Base URL for the API
 const API_BASE_URL = "http://127.0.0.1:8000";
+export const apiBaseUrl = API_BASE_URL;
 
 /**
  * Uploads files to the Content Maker API
@@ -75,7 +76,7 @@ export const generateFullTest = async (difficulty = "moderate") => {
  * @param {string[]} topics - List of specific sub-topics
  * @param {string} difficulty - Difficulty level ("easy", "moderate", "easy-to-moderate", "hard")
  * @param {number} totalQuestions - Number of questions to generate
- * @returns {Promise<{total_generated: number, final_unique_count: number, csv_url: string, subject: string}>}
+ * @returns {Promise<{total_generated: number, final_unique_count: number, csv_url: string, subject: string, pdf_url_en?: string, pdf_url_hi?: string}>}
  */
 export const generateCustomTest = async (subject, topics, difficulty = "moderate", totalQuestions = 10) => {
   const url = `${API_BASE_URL}/exam/generate-custom`;

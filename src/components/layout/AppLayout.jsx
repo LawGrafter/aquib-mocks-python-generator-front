@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   HardDrive,
   Monitor,
@@ -33,30 +33,24 @@ import { useTheme } from "@/providers/ThemeProvider";
 const Header = ({ onMenuClick }) => {
   const { theme, toggleTheme } = useTheme();
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
   const [showResults, setShowResults] = useState(false);
 
-  const searchablePages = [
-    { name: "Dashboard", href: "/", icon: HardDrive, description: "Main Overview" },
-    { name: "Syllabus", href: "/syllabus", icon: BookOpen, description: "Exam Syllabi & Topics" },
-    { name: "Content Maker", href: "/content-maker", icon: FileText, description: "Create Content from PDFs" },
-    { name: "APS/PS Full Mock", href: "/api-full-mock", icon: FileSpreadsheet, description: "Generate & Edit Mock Tests" },
-    { name: "Topic Wise Mock", href: "/topic-wise-mock", icon: BookOpen, description: "Custom Subject Mock Tests" },
-  ];
+  const searchablePages = useMemo(
+    () => [
+      { name: "Dashboard", href: "/", icon: HardDrive, description: "Main Overview" },
+      { name: "Syllabus", href: "/syllabus", icon: BookOpen, description: "Exam Syllabi & Topics" },
+      { name: "Content Maker", href: "/content-maker", icon: FileText, description: "Create Content from PDFs" },
+      { name: "APS/PS Full Mock", href: "/api-full-mock", icon: FileSpreadsheet, description: "Generate & Edit Mock Tests" },
+      { name: "Topic Wise Mock", href: "/topic-wise-mock", icon: BookOpen, description: "Custom Subject Mock Tests" },
+    ],
+    []
+  );
 
-  useEffect(() => {
-    if (searchQuery.trim()) {
-      const results = searchablePages.filter(page => 
-        page.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        page.description.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      setSearchResults(results);
-      setShowResults(true);
-    } else {
-      setSearchResults([]);
-      setShowResults(false);
-    }
-  }, [searchQuery]);
+  const searchResults = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return [];
+    return searchablePages.filter((page) => page.name.toLowerCase().includes(q) || page.description.toLowerCase().includes(q));
+  }, [searchQuery, searchablePages]);
 
   // Close search results when clicking outside
   useEffect(() => {
@@ -88,7 +82,11 @@ const Header = ({ onMenuClick }) => {
           <input
             type="text"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              const next = e.target.value;
+              setSearchQuery(next);
+              setShowResults(Boolean(next.trim()));
+            }}
             onFocus={() => searchQuery.trim() && setShowResults(true)}
             className="block w-full pl-12 pr-4 py-3 bg-gray-100 dark:bg-gray-700 border-none rounded-xl text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:bg-white dark:focus:bg-gray-600 transition-all duration-300 shadow-sm hover:shadow-md"
             placeholder="Search Drive..."
@@ -136,7 +134,7 @@ const Header = ({ onMenuClick }) => {
               </div>
             ) : (
               <div className="p-4 text-center text-gray-500 dark:text-gray-400">
-                No results found for "{searchQuery}"
+                No results found for {`"${searchQuery}"`}
               </div>
             )}
           </div>
@@ -178,7 +176,6 @@ const Header = ({ onMenuClick }) => {
 // Sidebar Component
 const Sidebar = ({ className = "", onClose }) => {
   const pathname = usePathname();
-  const [activeItem, setActiveItem] = useState("My Drive");
 
   const menuItems = [
     { name: "Dashboard", icon: HardDrive, href: "/" },
@@ -187,13 +184,6 @@ const Sidebar = ({ className = "", onClose }) => {
     { name: "APS/PS Full Mock", icon: FileSpreadsheet, href: "/api-full-mock" },
     { name: "Topic Wise Mock", icon: BookOpen, href: "/topic-wise-mock" },
   ];
-
-  useEffect(() => {
-    const item = menuItems.find((item) => item.href === pathname);
-    if (item) {
-      setActiveItem(item.name);
-    }
-  }, [pathname]);
 
   return (
     <div className={`w-72 bg-blue-600 dark:bg-gray-900 text-white flex flex-col h-screen relative overflow-hidden rounded-tr-[50px] transition-all duration-300 ${className}`}>
@@ -227,20 +217,19 @@ const Sidebar = ({ className = "", onClose }) => {
           item.href ? (
             <Link key={item.name} href={item.href}>
                <div
-                onClick={() => setActiveItem(item.name)}
                 className={`w-full flex items-center space-x-4 px-6 py-3.5 rounded-xl transition-all duration-300 group relative overflow-hidden cursor-pointer
                   ${
-                    activeItem === item.name
+                    item.href === pathname
                       ? "bg-gradient-to-r from-green-400 to-green-600 dark:from-green-600 dark:to-green-800 shadow-lg shadow-green-900/20 text-white"
                       : "text-blue-100 dark:text-gray-400 hover:bg-gradient-to-r hover:from-green-400 hover:to-green-600 dark:hover:from-green-600 dark:hover:to-green-800 hover:text-white hover:shadow-md"
                   }
                 `}
               >
-                <item.icon className={`h-5 w-5 ${activeItem === item.name ? "text-white" : "text-blue-200 dark:text-gray-500 group-hover:text-white"}`} />
+                <item.icon className={`h-5 w-5 ${item.href === pathname ? "text-white" : "text-blue-200 dark:text-gray-500 group-hover:text-white"}`} />
                 <span className="font-medium tracking-wide">{item.name}</span>
                 
                 {/* Active Indicator Line */}
-                {activeItem === item.name && (
+                {item.href === pathname && (
                     <div className="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-1 bg-white rounded-r-full"></div>
                 )}
               </div>
@@ -248,20 +237,19 @@ const Sidebar = ({ className = "", onClose }) => {
           ) : (
             <button
               key={item.name}
-              onClick={() => setActiveItem(item.name)}
               className={`w-full flex items-center space-x-4 px-6 py-3.5 rounded-xl transition-all duration-300 group relative overflow-hidden
                 ${
-                  activeItem === item.name
+                  false
                     ? "bg-gradient-to-r from-green-400 to-green-600 dark:from-green-600 dark:to-green-800 shadow-lg shadow-green-900/20 text-white"
                     : "text-blue-100 dark:text-gray-400 hover:bg-gradient-to-r hover:from-green-400 hover:to-green-600 dark:hover:from-green-600 dark:hover:to-green-800 hover:text-white hover:shadow-md"
                 }
               `}
             >
-              <item.icon className={`h-5 w-5 ${activeItem === item.name ? "text-white" : "text-blue-200 dark:text-gray-500 group-hover:text-white"}`} />
+              <item.icon className={`h-5 w-5 ${false ? "text-white" : "text-blue-200 dark:text-gray-500 group-hover:text-white"}`} />
               <span className="font-medium tracking-wide">{item.name}</span>
               
               {/* Active Indicator Line */}
-              {activeItem === item.name && (
+              {false && (
                   <div className="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-1 bg-white rounded-r-full"></div>
               )}
             </button>

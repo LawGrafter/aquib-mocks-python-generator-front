@@ -16,7 +16,7 @@ import {
   List,
   Hash
 } from "lucide-react";
-import { generateCustomTest, fetchCsvContent } from "@/utils/api";
+import { apiBaseUrl, generateCustomTest, fetchCsvContent } from "@/utils/api";
 import Papa from "papaparse";
 
 export default function TopicWiseMock() {
@@ -31,6 +31,11 @@ export default function TopicWiseMock() {
   const [csvHeaders, setCsvHeaders] = useState([]);
   const [error, setError] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
+
+  const resolveUrl = (url) => {
+    if (!url) return "";
+    return url.startsWith("http") ? url : `${apiBaseUrl}${url}`;
+  };
 
   const handleGenerate = async () => {
     if (!subject.trim()) {
@@ -253,6 +258,39 @@ export default function TopicWiseMock() {
                 </div>
               </div>
             </div>
+
+            {(result.pdf_url_en || result.pdf_url_hi) && (
+              <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
+                <div>
+                  <h3 className="text-base font-bold text-gray-800 dark:text-gray-100">PDF Downloads</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Download the generated MCQs PDF in English or Hindi.</p>
+                </div>
+                <div className="flex flex-wrap items-center gap-2 justify-end">
+                  {result.pdf_url_en && (
+                    <a
+                      href={resolveUrl(result.pdf_url_en)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold shadow-md shadow-indigo-200 dark:shadow-indigo-900/20 transition-all flex items-center"
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      Download English PDF
+                    </a>
+                  )}
+                  {result.pdf_url_hi && (
+                    <a
+                      href={resolveUrl(result.pdf_url_hi)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl text-sm font-semibold shadow-md shadow-green-200 dark:shadow-green-900/20 transition-all flex items-center"
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      Download Hindi PDF
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Live Preview Table */}
             {csvData.length > 0 && (
