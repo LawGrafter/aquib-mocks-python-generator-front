@@ -3,30 +3,29 @@
 import React, { useState } from "react";
 import AppLayout from "@/components/layout/AppLayout";
 import { 
-  FileSpreadsheet, 
+  Trophy,
   Download, 
   Loader2, 
   AlertCircle, 
   Play, 
-  Edit3, 
   Save,
   CheckCircle,
   BarChart3,
   ShieldCheck,
   XCircle,
-  AlertTriangle
+  AlertTriangle,
+  Target
 } from "lucide-react";
-import { generateFullTest, fetchCsvContent, validateQuestionsWithAI } from "@/utils/api";
+import { generateAHCChallenge, fetchCsvContent, validateQuestionsWithAI } from "@/utils/api";
 import Papa from "papaparse";
 
-export default function ApiFullMock() {
+export default function AHCChallenge() {
   const [difficulty, setDifficulty] = useState("moderate");
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState(null);
-  const [csvData, setCsvData] = useState([]); // Array of objects or arrays
+  const [csvData, setCsvData] = useState([]);
   const [csvHeaders, setCsvHeaders] = useState([]);
   const [error, setError] = useState(null);
-  const [isEditing, setIsEditing] = useState(false);
   const [progressMessage, setProgressMessage] = useState("");
   const [estimatedTime, setEstimatedTime] = useState(0);
   const [isValidating, setIsValidating] = useState(false);
@@ -39,18 +38,25 @@ export default function ApiFullMock() {
     setResult(null);
     setCsvData([]);
     setCsvHeaders([]);
-    setProgressMessage("Initializing exam generation...");
-    setEstimatedTime(300); // 5 minutes estimate
+    setValidationResults(null);
+    setShowValidation(false);
+    setProgressMessage("Initializing AHC Challenge 2026 generation...");
+    setEstimatedTime(420); // 7 minutes estimate for 100 questions
 
     // Simulate progress updates
     const progressSteps = [
-      { time: 2000, message: "Generating questions for Indian National Movement, Ancient History..." },
-      { time: 8000, message: "Generating questions for Geography, Polity, Science..." },
-      { time: 15000, message: "Generating questions for English, Hindi, Computers..." },
-      { time: 25000, message: "Generating questions for Current Affairs, Reasoning..." },
-      { time: 40000, message: "Running deduplication checks..." },
-      { time: 60000, message: "Ensuring 100 unique questions..." },
-      { time: 90000, message: "Finalizing exam paper..." },
+      { time: 3000, message: "Generating English questions (Synonym, Antonym, Grammar)..." },
+      { time: 10000, message: "Generating Hindi questions (Vilom, Paryayvachi, Sandhi)..." },
+      { time: 20000, message: "Generating Reasoning questions (Series, Syllogism, Coding)..." },
+      { time: 35000, message: "Generating Computer questions (Shortcuts, Networking)..." },
+      { time: 50000, message: "Generating History questions (Ancient, Medieval, National Movement)..." },
+      { time: 70000, message: "Generating Geography questions (Indian & World)..." },
+      { time: 90000, message: "Generating Science questions (Physics, Chemistry, Biology)..." },
+      { time: 110000, message: "Generating Polity & Economics questions..." },
+      { time: 130000, message: "Generating Current Affairs 2025 questions..." },
+      { time: 150000, message: "Generating Environment, Agriculture & Census questions..." },
+      { time: 170000, message: "Generating Art & Culture questions..." },
+      { time: 190000, message: "Finalizing all 100 questions..." },
     ];
 
     const progressTimers = progressSteps.map(({ time, message }) =>
@@ -61,13 +67,13 @@ export default function ApiFullMock() {
     const startTime = Date.now();
     const countdownInterval = setInterval(() => {
       const elapsed = Math.floor((Date.now() - startTime) / 1000);
-      const remaining = Math.max(0, 300 - elapsed);
+      const remaining = Math.max(0, 420 - elapsed);
       setEstimatedTime(remaining);
     }, 1000);
 
     try {
-      // 1. Generate the test
-      const data = await generateFullTest(difficulty);
+      // Generate the test
+      const data = await generateAHCChallenge(difficulty);
       
       // Clear all timers
       progressTimers.forEach(timer => clearTimeout(timer));
@@ -76,11 +82,11 @@ export default function ApiFullMock() {
       setProgressMessage("Loading preview...");
       setResult(data);
 
-      // 2. Fetch the CSV content for preview
+      // Fetch the CSV content for preview
       if (data.csv_url) {
         const csvText = await fetchCsvContent(data.csv_url);
         
-        // 3. Parse CSV
+        // Parse CSV
         Papa.parse(csvText, {
           header: true,
           skipEmptyLines: true,
@@ -95,7 +101,7 @@ export default function ApiFullMock() {
         });
       }
     } catch (err) {
-      setError("Failed to generate mock test. Please check the backend connection.");
+      setError("Failed to generate AHC Challenge. Please check the backend connection.");
       console.error(err);
     } finally {
       setIsLoading(false);
@@ -110,18 +116,15 @@ export default function ApiFullMock() {
     setCsvData(newData);
   };
 
-  const handleDownloadEdited = () => {
+  const handleDownloadCSV = () => {
     if (csvData.length === 0) return;
 
-    // Unparse back to CSV string
     const csvString = Papa.unparse(csvData);
-    
-    // Create Blob and download
     const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.setAttribute("download", `edited_mock_test_${difficulty}_${new Date().getTime()}.csv`);
+    link.setAttribute("download", `ahc_challenge_2026_${difficulty}_${new Date().getTime()}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -151,12 +154,61 @@ export default function ApiFullMock() {
         
         {/* Header */}
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-gray-100 flex items-center">
-            APS/PS Full Mock Generator 
-            <span className="ml-3 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 p-2 rounded-lg">
-              <FileSpreadsheet className="w-6 h-6" />
-            </span>
-          </h2>
+          <div>
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-gray-100 flex items-center">
+              AHC Challenge 2026
+              <span className="ml-3 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 p-2 rounded-lg">
+                <Trophy className="w-6 h-6" />
+              </span>
+            </h2>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+              Allahabad High Court Challenge - 100 Questions with Exact Syllabus Breakdown
+            </p>
+          </div>
+        </div>
+
+        {/* Syllabus Info Card */}
+        <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-2xl shadow-sm border border-blue-100 dark:border-blue-800 p-6">
+          <div className="flex items-start space-x-4">
+            <Target className="w-8 h-8 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-1" />
+            <div className="flex-1">
+              <h3 className="font-bold text-gray-800 dark:text-gray-100 mb-2">Exam Pattern</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                <div className="bg-white dark:bg-gray-800 p-2 rounded-lg">
+                  <p className="text-gray-500 dark:text-gray-400">English</p>
+                  <p className="font-bold text-gray-800 dark:text-gray-100">10 Qs</p>
+                </div>
+                <div className="bg-white dark:bg-gray-800 p-2 rounded-lg">
+                  <p className="text-gray-500 dark:text-gray-400">Hindi</p>
+                  <p className="font-bold text-gray-800 dark:text-gray-100">7 Qs</p>
+                </div>
+                <div className="bg-white dark:bg-gray-800 p-2 rounded-lg">
+                  <p className="text-gray-500 dark:text-gray-400">Reasoning</p>
+                  <p className="font-bold text-gray-800 dark:text-gray-100">12 Qs</p>
+                </div>
+                <div className="bg-white dark:bg-gray-800 p-2 rounded-lg">
+                  <p className="text-gray-500 dark:text-gray-400">Computer</p>
+                  <p className="font-bold text-gray-800 dark:text-gray-100">10 Qs</p>
+                </div>
+                <div className="bg-white dark:bg-gray-800 p-2 rounded-lg">
+                  <p className="text-gray-500 dark:text-gray-400">History</p>
+                  <p className="font-bold text-gray-800 dark:text-gray-100">14 Qs</p>
+                </div>
+                <div className="bg-white dark:bg-gray-800 p-2 rounded-lg">
+                  <p className="text-gray-500 dark:text-gray-400">Geography</p>
+                  <p className="font-bold text-gray-800 dark:text-gray-100">10 Qs</p>
+                </div>
+                <div className="bg-white dark:bg-gray-800 p-2 rounded-lg">
+                  <p className="text-gray-500 dark:text-gray-400">Science</p>
+                  <p className="font-bold text-gray-800 dark:text-gray-100">8 Qs</p>
+                </div>
+                <div className="bg-white dark:bg-gray-800 p-2 rounded-lg">
+                  <p className="text-gray-500 dark:text-gray-400">Others</p>
+                  <p className="font-bold text-gray-800 dark:text-gray-100">29 Qs</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Control Panel */}
@@ -170,11 +222,11 @@ export default function ApiFullMock() {
                 id="difficulty"
                 value={difficulty}
                 onChange={(e) => setDifficulty(e.target.value)}
-                className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500/20 dark:focus:ring-green-400/20 focus:border-green-500 dark:focus:border-green-400 text-gray-800 dark:text-gray-100 transition-all cursor-pointer"
+                className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-500/20 dark:focus:ring-yellow-400/20 focus:border-yellow-500 dark:focus:border-yellow-400 text-gray-800 dark:text-gray-100 transition-all cursor-pointer"
               >
                 <option value="easy">Easy</option>
                 <option value="moderate">Moderate</option>
-                <option value="easy-to-moderate">Easy to Moderate</option>
+                <option value="hard">Hard</option>
               </select>
             </div>
             
@@ -184,7 +236,7 @@ export default function ApiFullMock() {
               className={`w-full md:w-auto px-8 py-3 rounded-xl font-bold text-white shadow-lg transition-all duration-300 flex items-center justify-center space-x-2
                 ${isLoading 
                   ? "bg-gray-400 dark:bg-gray-600 cursor-not-allowed shadow-none" 
-                  : "bg-gradient-to-r from-green-600 to-green-700 hover:shadow-xl hover:scale-[1.02]"
+                  : "bg-gradient-to-r from-yellow-600 to-orange-600 hover:shadow-xl hover:scale-[1.02]"
                 }
               `}
             >
@@ -196,7 +248,7 @@ export default function ApiFullMock() {
               ) : (
                 <>
                   <Play className="w-5 h-5 fill-current" />
-                  <span>Generate Test</span>
+                  <span>Generate 100 Questions</span>
                 </>
               )}
             </button>
@@ -211,31 +263,31 @@ export default function ApiFullMock() {
           
           {isLoading && (
             <div className="mt-6 space-y-4 animate-in fade-in slide-in-from-top-2">
-              <div className="p-6 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800">
+              <div className="p-6 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl border border-yellow-100 dark:border-yellow-800">
                 <div className="flex items-start space-x-3 mb-4">
-                  <Loader2 className="w-5 h-5 text-blue-600 dark:text-blue-400 animate-spin flex-shrink-0 mt-0.5" />
+                  <Loader2 className="w-5 h-5 text-yellow-600 dark:text-yellow-400 animate-spin flex-shrink-0 mt-0.5" />
                   <div className="flex-1">
-                    <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-1">Generation in Progress</h4>
-                    <p className="text-sm text-blue-700 dark:text-blue-300">{progressMessage}</p>
+                    <h4 className="font-semibold text-yellow-900 dark:text-yellow-100 mb-1">Generation in Progress</h4>
+                    <p className="text-sm text-yellow-700 dark:text-yellow-300">{progressMessage}</p>
                   </div>
                 </div>
                 
                 <div className="space-y-2">
-                  <div className="flex justify-between text-xs text-blue-600 dark:text-blue-400 font-medium">
+                  <div className="flex justify-between text-xs text-yellow-600 dark:text-yellow-400 font-medium">
                     <span>Progress</span>
                     <span>Est. {Math.floor(estimatedTime / 60)}:{String(estimatedTime % 60).padStart(2, '0')} remaining</span>
                   </div>
-                  <div className="w-full bg-blue-200 dark:bg-blue-800 rounded-full h-2 overflow-hidden">
+                  <div className="w-full bg-yellow-200 dark:bg-yellow-800 rounded-full h-2 overflow-hidden">
                     <div 
-                      className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all duration-1000 ease-out"
-                      style={{ width: `${Math.min(100, ((300 - estimatedTime) / 300) * 100)}%` }}
+                      className="h-full bg-gradient-to-r from-yellow-500 to-orange-600 rounded-full transition-all duration-1000 ease-out"
+                      style={{ width: `${Math.min(100, ((420 - estimatedTime) / 420) * 100)}%` }}
                     ></div>
                   </div>
                 </div>
                 
-                <div className="mt-4 p-3 bg-white dark:bg-gray-800 rounded-lg border border-blue-100 dark:border-blue-700">
+                <div className="mt-4 p-3 bg-white dark:bg-gray-800 rounded-lg border border-yellow-100 dark:border-yellow-700">
                   <p className="text-xs text-gray-600 dark:text-gray-400">
-                    <strong className="text-gray-800 dark:text-gray-200">What's happening:</strong> Generating 100 unique questions across 18 subjects using AI, then deduplicating and validating each question. This typically takes 3-5 minutes.
+                    <strong className="text-gray-800 dark:text-gray-200">What's happening:</strong> Generating 100 questions across 19 subjects with exact syllabus breakdown. Each subject has specific question types (e.g., Synonym, Antonym, Syllogism, etc.). This typically takes 5-7 minutes.
                   </p>
                 </div>
               </div>
@@ -248,47 +300,35 @@ export default function ApiFullMock() {
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
             
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center space-x-4 transition-colors">
-                <div className="p-3 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full">
+                <div className="p-3 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 rounded-full">
                   <CheckCircle className="w-6 h-6" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 font-medium uppercase">Total Generated</p>
-                  <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">{result.total_generated}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 font-medium uppercase">Total Questions</p>
+                  <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">{result.final_count} / 100</p>
                 </div>
               </div>
 
               <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center space-x-4 transition-colors">
                 <div className="p-3 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-full">
-                  <FileSpreadsheet className="w-6 h-6" />
+                  <Trophy className="w-6 h-6" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 font-medium uppercase">Unique Count</p>
-                  <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">{result.final_unique_count}</p>
-                </div>
-              </div>
-
-              <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center space-x-4 transition-colors">
-                <div className="p-3 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-full">
-                  <BarChart3 className="w-6 h-6" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 font-medium uppercase">Top Category</p>
-                  <p className="text-xl font-bold text-gray-800 dark:text-gray-100 truncate">
-                    {Object.entries(result.breakdown || {}).sort((a,b) => b[1] - a[1])[0]?.[0] || "N/A"}
-                  </p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 font-medium uppercase">Difficulty</p>
+                  <p className="text-2xl font-bold text-gray-800 dark:text-gray-100 capitalize">{difficulty}</p>
                 </div>
               </div>
             </div>
 
-            {/* Breakdown Chart (Simple List for now) */}
+            {/* Subject Breakdown */}
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 md:p-8 transition-colors">
               <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-4 flex items-center">
                 <BarChart3 className="w-5 h-5 mr-2 text-gray-400" />
-                Topic Breakdown
+                Subject-wise Breakdown
               </h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
                 {Object.entries(result.breakdown || {}).map(([key, value]) => (
                   <div key={key} className="p-4 bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-100 dark:border-gray-600">
                     <p className="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase truncate mb-1">{key}</p>
@@ -302,10 +342,9 @@ export default function ApiFullMock() {
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden flex flex-col h-[600px] transition-colors">
               <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-gray-50/50 dark:bg-gray-700/50">
                 <div className="flex items-center space-x-2">
-                  <Edit3 className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                   <h3 className="font-bold text-gray-800 dark:text-gray-100">Live Preview & Edit</h3>
-                  <span className="text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-full font-medium">
-                    {csvData.length} Rows
+                  <span className="text-xs px-2 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 rounded-full font-medium">
+                    {csvData.length} Questions
                   </span>
                 </div>
                 <div className="flex space-x-3">
@@ -331,7 +370,7 @@ export default function ApiFullMock() {
                     )}
                   </button>
                   <button
-                    onClick={handleDownloadEdited}
+                    onClick={handleDownloadCSV}
                     className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-semibold shadow-sm transition-colors flex items-center"
                   >
                     <Save className="w-4 h-4 mr-2" />
@@ -354,7 +393,7 @@ export default function ApiFullMock() {
                   </thead>
                   <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                     {csvData.map((row, rowIndex) => (
-                      <tr key={rowIndex} className="hover:bg-blue-50/30 dark:hover:bg-gray-700/30 transition-colors group">
+                      <tr key={rowIndex} className="hover:bg-yellow-50/30 dark:hover:bg-gray-700/30 transition-colors group">
                         <td className="p-4 text-xs text-gray-400 dark:text-gray-500 font-mono border-r border-gray-100 dark:border-gray-700">
                           {rowIndex + 1}
                         </td>
@@ -363,7 +402,7 @@ export default function ApiFullMock() {
                             <textarea
                               value={row[header] || ""}
                               onChange={(e) => handleCellChange(rowIndex, header, e.target.value)}
-                              className="w-full h-full min-h-[50px] p-3 bg-transparent border-none focus:ring-2 focus:ring-inset focus:ring-blue-500 dark:focus:ring-blue-400 focus:bg-white dark:focus:bg-gray-600 text-sm text-gray-700 dark:text-gray-200 resize-none overflow-hidden"
+                              className="w-full h-full min-h-[50px] p-3 bg-transparent border-none focus:ring-2 focus:ring-inset focus:ring-yellow-500 dark:focus:ring-yellow-400 focus:bg-white dark:focus:bg-gray-600 text-sm text-gray-700 dark:text-gray-200 resize-none overflow-hidden"
                               rows={1}
                               style={{ height: '100%' }}
                             />
@@ -432,7 +471,7 @@ export default function ApiFullMock() {
                       <XCircle className="w-4 h-4 mr-2 text-red-600 dark:text-red-400" />
                       Duplicate Questions Found
                     </h4>
-                    <div className="space-y-3">
+                    <div className="space-y-3 max-h-64 overflow-y-auto">
                       {validationResults.duplicates.map((dup, idx) => (
                         <div key={idx} className="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-100 dark:border-red-800">
                           <div className="flex items-start justify-between mb-2">
@@ -455,7 +494,7 @@ export default function ApiFullMock() {
                 <div>
                   <h4 className="font-semibold text-gray-800 dark:text-gray-100 mb-3">Question-by-Question Analysis</h4>
                   <div className="space-y-3 max-h-96 overflow-y-auto">
-                    {validationResults.validated_questions?.map((item, idx) => (
+                    {validationResults.validated_questions?.slice(0, 20).map((item, idx) => (
                       <div 
                         key={idx} 
                         className={`p-4 rounded-lg border ${
@@ -511,6 +550,11 @@ export default function ApiFullMock() {
                         )}
                       </div>
                     ))}
+                    {validationResults.validated_questions?.length > 20 && (
+                      <p className="text-xs text-gray-500 dark:text-gray-400 text-center py-2">
+                        Showing first 20 of {validationResults.validated_questions.length} validated questions
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>

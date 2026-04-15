@@ -1,5 +1,5 @@
-// Base URL for the API
-const API_BASE_URL = "http://127.0.0.1:8000";
+// Base URL for the API — set NEXT_PUBLIC_API_URL in Vercel env vars
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
 export const apiBaseUrl = API_BASE_URL;
 
 /**
@@ -123,6 +123,62 @@ export const fetchCsvContent = async (csvUrl) => {
     return await response.text();
   } catch (error) {
     console.error("Error fetching CSV content:", error);
+    throw error;
+  }
+};
+
+/**
+ * Validates questions using AI to check correctness and find duplicates
+ * @param {Array} questions - Array of question objects
+ * @returns {Promise<Object>} - Validation results
+ */
+export const validateQuestionsWithAI = async (questions) => {
+  const url = `${API_BASE_URL}/exam/validate-questions`;
+  
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ questions }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status} ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error validating questions:", error);
+    throw error;
+  }
+};
+
+/**
+ * Generates AHC Challenge 2026 exam with exact syllabus breakdown
+ * @param {string} difficulty - Difficulty level ("easy", "moderate", "hard")
+ * @returns {Promise<{total_generated: number, final_count: number, csv_url: string, breakdown: object}>}
+ */
+export const generateAHCChallenge = async (difficulty = "moderate") => {
+  const url = `${API_BASE_URL}/ahc-challenge/generate`;
+  
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ difficulty }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status} ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error generating AHC Challenge:", error);
     throw error;
   }
 };

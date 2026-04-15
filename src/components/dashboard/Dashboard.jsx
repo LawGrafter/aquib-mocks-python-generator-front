@@ -3,7 +3,7 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Folder, FileText, File, MoreHorizontal, User, LayoutGrid, FileSpreadsheet, ArrowRight, BookOpen } from "lucide-react";
+import { Folder, FileText, File, MoreHorizontal, User, LayoutGrid, FileSpreadsheet, ArrowRight, BookOpen, Trophy } from "lucide-react";
 
 // Mock Data
 const quickAccessFolders = [
@@ -15,6 +15,15 @@ const quickAccessFolders = [
     icon: FileSpreadsheet, 
     href: "/api-full-mock",
     description: "Generate & Edit Mock Tests"
+  },
+  { 
+    id: 'feature-4', 
+    name: "AHC Challenge 2026", 
+    type: "feature", 
+    color: "yellow", 
+    icon: Trophy, 
+    href: "/ahc-challenge",
+    description: "100 Questions - Exact Syllabus"
   },
   { 
     id: 'feature-3', 
@@ -113,21 +122,23 @@ const Dashboard = () => {
              const CardContent = (
                 <div
                   className={`relative p-5 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer group h-full flex flex-col justify-between
-                    ${item.color === 'blue' ? 'bg-blue-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-100 dark:border-gray-700'}
+                    ${item.color === 'blue' ? 'bg-blue-600 text-white' : 
+                      item.color === 'yellow' ? 'bg-gradient-to-br from-yellow-500 to-orange-600 text-white' :
+                      'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-100 dark:border-gray-700'}
                   `}
                 >
                   {item.type === 'feature' ? (
                       <>
                         <div className="flex justify-between items-start mb-4">
-                            <div className={`p-2 rounded-lg ${item.color === 'blue' ? 'bg-white/20' : 'bg-blue-50 dark:bg-blue-900/30'}`}>
-                                <item.icon className={`w-6 h-6 ${item.color === 'blue' ? 'text-white' : 'text-blue-600 dark:text-blue-400'}`} />
+                            <div className={`p-2 rounded-lg ${(item.color === 'blue' || item.color === 'yellow') ? 'bg-white/20' : 'bg-blue-50 dark:bg-blue-900/30'}`}>
+                                <item.icon className={`w-6 h-6 ${(item.color === 'blue' || item.color === 'yellow') ? 'text-white' : 'text-blue-600 dark:text-blue-400'}`} />
                             </div>
-                            <ArrowRight className={`w-5 h-5 opacity-0 group-hover:opacity-100 transition-opacity ${item.color === 'blue' ? 'text-white' : 'text-gray-400 dark:text-gray-500'}`} />
+                            <ArrowRight className={`w-5 h-5 opacity-0 group-hover:opacity-100 transition-opacity ${(item.color === 'blue' || item.color === 'yellow') ? 'text-white' : 'text-gray-400 dark:text-gray-500'}`} />
                         </div>
                         
                         <div className="mt-auto">
                              <h4 className="font-bold text-lg leading-tight mb-1">{item.name}</h4>
-                             <p className={`text-xs font-medium uppercase tracking-wide ${item.color === 'blue' ? 'text-blue-100' : 'text-gray-400 dark:text-gray-500'}`}>
+                             <p className={`text-xs font-medium uppercase tracking-wide ${(item.color === 'blue' || item.color === 'yellow') ? 'text-white/80' : 'text-gray-400 dark:text-gray-500'}`}>
                                 {item.description}
                              </p>
                         </div>
