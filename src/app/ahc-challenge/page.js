@@ -14,7 +14,10 @@ import {
   ShieldCheck,
   XCircle,
   AlertTriangle,
-  Target
+  Target,
+  Upload,
+  FileText,
+  Trash2
 } from "lucide-react";
 import { generateAHCChallenge, fetchCsvContent, validateQuestionsWithAI } from "@/utils/api";
 import Papa from "papaparse";
@@ -31,6 +34,7 @@ export default function AHCChallenge() {
   const [isValidating, setIsValidating] = useState(false);
   const [validationResults, setValidationResults] = useState(null);
   const [showValidation, setShowValidation] = useState(false);
+  const [previousCsvFiles, setPreviousCsvFiles] = useState([]);
 
   const handleGenerate = async () => {
     setIsLoading(true);
@@ -72,8 +76,8 @@ export default function AHCChallenge() {
     }, 1000);
 
     try {
-      // Generate the test
-      const data = await generateAHCChallenge(difficulty);
+      // Generate the test (with optional CSV dedup files)
+      const data = await generateAHCChallenge(difficulty, previousCsvFiles);
       
       // Clear all timers
       progressTimers.forEach(timer => clearTimeout(timer));
@@ -211,6 +215,65 @@ export default function AHCChallenge() {
           </div>
         </div>
 
+        {/* Upload Previous CSVs */}
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 md:p-8 transition-colors duration-300">
+          <h3 className="font-bold text-gray-800 dark:text-gray-100 mb-2 flex items-center">
+            <Upload className="w-5 h-5 mr-2 text-blue-500" />
+            Upload Previous Question CSVs (Optional)
+          </h3>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+            Upload your previously generated CSVs so the system can avoid generating duplicate questions.
+          </p>
+
+          <div className="flex flex-col gap-4">
+            <label
+              className="flex items-center justify-center w-full h-24 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl cursor-pointer hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-colors"
+            >
+              <input
+                type="file"
+                accept=".csv"
+                multiple
+                className="hidden"
+                onChange={(e) => {
+                  const files = Array.from(e.target.files || []);
+                  setPreviousCsvFiles((prev) => [...prev, ...files]);
+                  e.target.value = "";
+                }}
+              />
+              <div className="text-center">
+                <FileText className="w-6 h-6 mx-auto text-gray-400 dark:text-gray-500 mb-1" />
+                <span className="text-sm text-gray-500 dark:text-gray-400">Click to select CSV files</span>
+              </div>
+            </label>
+
+            {previousCsvFiles.length > 0 && (
+              <div className="space-y-2">
+                {previousCsvFiles.map((file, idx) => (
+                  <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+                    <div className="flex items-center space-x-2 min-w-0">
+                      <FileText className="w-4 h-4 text-green-500 flex-shrink-0" />
+                      <span className="text-sm text-gray-700 dark:text-gray-300 truncate">{file.name}</span>
+                      <span className="text-xs text-gray-400">({(file.size / 1024).toFixed(1)} KB)</span>
+                    </div>
+                    <button
+                      onClick={() => setPreviousCsvFiles((prev) => prev.filter((_, i) => i !== idx))}
+                      className="text-red-400 hover:text-red-600 dark:hover:text-red-300 flex-shrink-0 ml-2"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+                <button
+                  onClick={() => setPreviousCsvFiles([])}
+                  className="text-xs text-red-500 hover:text-red-700 dark:hover:text-red-400"
+                >
+                  Remove all
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Control Panel */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 md:p-8 transition-colors duration-300">
           <div className="flex flex-col md:flex-row gap-6 items-end">
@@ -320,6 +383,18 @@ export default function AHCChallenge() {
                   <p className="text-2xl font-bold text-gray-800 dark:text-gray-100 capitalize">{difficulty}</p>
                 </div>
               </div>
+
+              {result.duplicates_removed > 0 && (
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-orange-200 dark:border-orange-800 flex items-center space-x-4 transition-colors md:col-span-2">
+                  <div className="p-3 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-full">
+                    <ShieldCheck className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 font-medium uppercase">Duplicates Removed</p>
+                    <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">{result.duplicates_removed} removed &amp; replaced</p>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Subject Breakdown */}

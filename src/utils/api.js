@@ -158,18 +158,25 @@ export const validateQuestionsWithAI = async (questions) => {
 /**
  * Generates AHC Challenge 2026 exam with exact syllabus breakdown
  * @param {string} difficulty - Difficulty level ("easy", "moderate", "hard")
- * @returns {Promise<{total_generated: number, final_count: number, csv_url: string, breakdown: object}>}
+ * @param {File[]} previousCsvFiles - Optional array of previous CSV files for deduplication
+ * @returns {Promise<{total_generated: number, final_count: number, csv_url: string, breakdown: object, duplicates_removed: number}>}
  */
-export const generateAHCChallenge = async (difficulty = "moderate") => {
+export const generateAHCChallenge = async (difficulty = "moderate", previousCsvFiles = []) => {
   const url = `${API_BASE_URL}/ahc-challenge/generate`;
   
   try {
+    const formData = new FormData();
+    formData.append("difficulty", difficulty);
+    
+    if (previousCsvFiles && previousCsvFiles.length > 0) {
+      previousCsvFiles.forEach((file) => {
+        formData.append("previous_csvs", file);
+      });
+    }
+
     const response = await fetch(url, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ difficulty }),
+      body: formData,
     });
 
     if (!response.ok) {
