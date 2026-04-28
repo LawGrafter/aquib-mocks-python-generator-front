@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import AppLayout from "@/components/layout/AppLayout";
 import { 
   FileSpreadsheet, 
@@ -14,7 +14,10 @@ import {
   BookOpen,
   Target,
   List,
-  Hash
+  Hash,
+  Upload,
+  FileText,
+  Trash2
 } from "lucide-react";
 import { apiBaseUrl, generateCustomTest, fetchCsvContent } from "@/utils/api";
 import Papa from "papaparse";
@@ -31,6 +34,32 @@ export default function TopicWiseMock() {
   const [csvHeaders, setCsvHeaders] = useState([]);
   const [error, setError] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [previousCsvFiles, setPreviousCsvFiles] = useState([]);
+  const resultsRef = useRef(null);
+
+  const playBeep = () => {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = 880;
+      gain.gain.value = 0.3;
+      osc.start();
+      osc.stop(ctx.currentTime + 0.15);
+      setTimeout(() => {
+        const osc2 = ctx.createOscillator();
+        const gain2 = ctx.createGain();
+        osc2.connect(gain2);
+        gain2.connect(ctx.destination);
+        osc2.frequency.value = 1100;
+        gain2.gain.value = 0.3;
+        osc2.start();
+        osc2.stop(ctx.currentTime + 0.15);
+      }, 200);
+    } catch (e) { console.log("Audio not supported"); }
+  };
 
   const resolveUrl = (url) => {
     if (!url) return "";
@@ -58,7 +87,7 @@ export default function TopicWiseMock() {
 
     try {
       // 1. Generate the test
-      const data = await generateCustomTest(subject, topicsList, difficulty, totalQuestions);
+      const data = await generateCustomTest(subject, topicsList, difficulty, totalQuestions, previousCsvFiles);
       setResult(data);
 
       // 2. Fetch the CSV content for preview
@@ -72,6 +101,11 @@ export default function TopicWiseMock() {
           complete: (results) => {
             setCsvHeaders(results.meta.fields || []);
             setCsvData(results.data);
+            // Beep + scroll to results
+            playBeep();
+            setTimeout(() => {
+              resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+            }, 100);
           },
           error: (err) => {
             console.error("CSV Parse Error:", err);
@@ -118,10 +152,65 @@ export default function TopicWiseMock() {
         <div className="flex items-center justify-between">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-gray-100 flex items-center">
             Topic Wise Mock
-            <span className="ml-3 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 p-2 rounded-lg">
+            <span className="ml-3 bg-brand-100 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400 p-2 rounded-lg">
               <BookOpen className="w-6 h-6" />
             </span>
           </h2>
+        </div>
+
+        {/* Upload Previous CSVs */}
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+          <h3 className="font-bold text-gray-800 dark:text-gray-100 mb-2 flex items-center">
+            <Upload className="w-5 h-5 mr-2 text-brand-500" />
+            Upload Previous Question CSVs (Optional)
+          </h3>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+            Upload your previously generated CSVs so the system can avoid generating duplicate questions.
+          </p>
+          <div className="flex flex-col gap-4">
+            <label className="flex items-center justify-center w-full h-24 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl cursor-pointer hover:border-brand-400 dark:hover:border-brand-500 hover:bg-brand-50/50 dark:hover:bg-brand-900/10 transition-colors">
+              <input
+                type="file"
+                accept=".csv"
+                multiple
+                className="hidden"
+                onChange={(e) => {
+                  const files = Array.from(e.target.files || []);
+                  setPreviousCsvFiles((prev) => [...prev, ...files]);
+                  e.target.value = "";
+                }}
+              />
+              <div className="text-center">
+                <FileText className="w-6 h-6 mx-auto text-gray-400 dark:text-gray-500 mb-1" />
+                <span className="text-sm text-gray-500 dark:text-gray-400">Click to select CSV files</span>
+              </div>
+            </label>
+            {previousCsvFiles.length > 0 && (
+              <div className="space-y-2">
+                {previousCsvFiles.map((file, idx) => (
+                  <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+                    <div className="flex items-center space-x-2 min-w-0">
+                      <FileText className="w-4 h-4 text-green-500 flex-shrink-0" />
+                      <span className="text-sm text-gray-700 dark:text-gray-300 truncate">{file.name}</span>
+                      <span className="text-xs text-gray-400">({(file.size / 1024).toFixed(1)} KB)</span>
+                    </div>
+                    <button
+                      onClick={() => setPreviousCsvFiles((prev) => prev.filter((_, i) => i !== idx))}
+                      className="text-red-400 hover:text-red-600 dark:hover:text-red-300 flex-shrink-0 ml-2"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+                <button
+                  onClick={() => setPreviousCsvFiles([])}
+                  className="text-xs text-red-500 hover:text-red-700 dark:hover:text-red-400"
+                >
+                  Remove all
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Control Panel */}
@@ -131,22 +220,47 @@ export default function TopicWiseMock() {
             {/* Subject */}
             <div className="space-y-2">
               <label className="text-sm font-semibold text-gray-600 dark:text-gray-300 flex items-center">
-                <BookOpen className="w-4 h-4 mr-2 text-purple-500" />
+                <BookOpen className="w-4 h-4 mr-2 text-brand-500" />
                 Subject
               </label>
-              <input 
-                type="text"
-                value={subject}
-                onChange={(e) => setSubject(e.target.value)}
-                placeholder="e.g. Ancient History"
-                className="w-full p-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all text-gray-700 dark:text-gray-200"
-              />
+              <div className="relative">
+                <select
+                  value={subject}
+                  onChange={(e) => setSubject(e.target.value)}
+                  className="w-full p-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl appearance-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all text-gray-700 dark:text-gray-200 cursor-pointer"
+                >
+                  <option value="">Select a subject</option>
+                  <option value="English">English</option>
+                  <option value="Hindi">Hindi</option>
+                  <option value="Reasoning">Reasoning</option>
+                  <option value="Computer">Computer</option>
+                  <option value="Economics">Economics</option>
+                  <option value="Environment">Environment</option>
+                  <option value="Polity">Polity</option>
+                  <option value="Indian National Movement">Indian National Movement</option>
+                  <option value="Ancient History">Ancient History</option>
+                  <option value="Medieval History">Medieval History</option>
+                  <option value="Chemistry">Chemistry</option>
+                  <option value="Biology">Biology</option>
+                  <option value="Physics">Physics</option>
+                  <option value="World Geography">World Geography</option>
+                  <option value="Indian Geography">Indian Geography</option>
+                  <option value="Agriculture">Agriculture</option>
+                  <option value="Census">Census</option>
+                  <option value="Current Affairs 2025">Current Affairs 2025</option>
+                  <option value="Art & Culture">Art & Culture</option>
+                  <option value="UP GK">UP GK</option>
+                </select>
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+              </div>
             </div>
 
             {/* Topics */}
             <div className="space-y-2">
               <label className="text-sm font-semibold text-gray-600 dark:text-gray-300 flex items-center">
-                <List className="w-4 h-4 mr-2 text-purple-500" />
+                <List className="w-4 h-4 mr-2 text-brand-500" />
                 Topics (comma separated)
               </label>
               <input 
@@ -154,21 +268,21 @@ export default function TopicWiseMock() {
                 value={topicsInput}
                 onChange={(e) => setTopicsInput(e.target.value)}
                 placeholder="e.g. Gupta Empire, Mauryan Admin"
-                className="w-full p-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all text-gray-700 dark:text-gray-200"
+                className="w-full p-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all text-gray-700 dark:text-gray-200"
               />
             </div>
 
             {/* Difficulty */}
             <div className="space-y-2">
               <label className="text-sm font-semibold text-gray-600 dark:text-gray-300 flex items-center">
-                <Target className="w-4 h-4 mr-2 text-purple-500" />
+                <Target className="w-4 h-4 mr-2 text-brand-500" />
                 Difficulty
               </label>
               <div className="relative">
                 <select 
                   value={difficulty}
                   onChange={(e) => setDifficulty(e.target.value)}
-                  className="w-full p-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl appearance-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all text-gray-700 dark:text-gray-200 cursor-pointer"
+                  className="w-full p-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl appearance-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all text-gray-700 dark:text-gray-200 cursor-pointer"
                 >
                   <option value="easy">Easy</option>
                   <option value="moderate">Moderate</option>
@@ -184,7 +298,7 @@ export default function TopicWiseMock() {
              {/* Total Questions */}
              <div className="space-y-2">
               <label className="text-sm font-semibold text-gray-600 dark:text-gray-300 flex items-center">
-                <Hash className="w-4 h-4 mr-2 text-purple-500" />
+                <Hash className="w-4 h-4 mr-2 text-brand-500" />
                 Total Questions
               </label>
               <input 
@@ -193,7 +307,7 @@ export default function TopicWiseMock() {
                 max="500"
                 value={totalQuestions}
                 onChange={(e) => setTotalQuestions(e.target.value)}
-                className="w-full p-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all text-gray-700 dark:text-gray-200"
+                className="w-full p-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all text-gray-700 dark:text-gray-200"
               />
             </div>
 
@@ -204,9 +318,9 @@ export default function TopicWiseMock() {
               onClick={handleGenerate}
               disabled={isLoading}
               className={`
-                px-8 py-3 rounded-xl font-bold text-white shadow-lg shadow-purple-500/30 
+                px-8 py-3 rounded-xl font-bold text-white shadow-lg shadow-brand-500/30 
                 flex items-center space-x-2 transition-all transform hover:scale-[1.02] active:scale-[0.98]
-                ${isLoading ? 'bg-purple-400 cursor-not-allowed' : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:shadow-purple-500/40'}
+                ${isLoading ? 'bg-brand-400 cursor-not-allowed' : 'bg-gradient-to-r from-brand to-brand-light hover:shadow-brand/40'}
               `}
             >
               {isLoading ? (
@@ -234,12 +348,12 @@ export default function TopicWiseMock() {
 
         {/* Results Section */}
         {result && (
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-6">
+          <div ref={resultsRef} className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-6">
             
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm flex items-center space-x-4">
-                <div className="p-3 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-xl">
+                <div className="p-3 bg-brand-50 dark:bg-brand/20 text-brand dark:text-brand-light rounded-xl">
                   <CheckCircle className="w-6 h-6" />
                 </div>
                 <div>
@@ -249,7 +363,7 @@ export default function TopicWiseMock() {
               </div>
 
               <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm flex items-center space-x-4">
-                <div className="p-3 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl">
+                <div className="p-3 bg-brand-50 dark:bg-brand/20 text-brand dark:text-brand-light rounded-xl">
                   <FileSpreadsheet className="w-6 h-6" />
                 </div>
                 <div>
@@ -271,7 +385,7 @@ export default function TopicWiseMock() {
                       href={resolveUrl(result.pdf_url_en)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold shadow-md shadow-indigo-200 dark:shadow-indigo-900/20 transition-all flex items-center"
+                      className="px-4 py-2 bg-brand hover:bg-brand-dark text-white rounded-xl text-sm font-semibold shadow-md shadow-brand/20 transition-all flex items-center"
                     >
                       <Download className="w-4 h-4 mr-2" />
                       Download English PDF
@@ -282,7 +396,7 @@ export default function TopicWiseMock() {
                       href={resolveUrl(result.pdf_url_hi)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl text-sm font-semibold shadow-md shadow-green-200 dark:shadow-green-900/20 transition-all flex items-center"
+                      className="px-4 py-2 bg-brand hover:bg-brand-dark text-white rounded-xl text-sm font-semibold shadow-md shadow-brand/20 transition-all flex items-center"
                     >
                       <Download className="w-4 h-4 mr-2" />
                       Download Hindi PDF
@@ -298,7 +412,7 @@ export default function TopicWiseMock() {
                 <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div>
                     <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 flex items-center">
-                      <FileSpreadsheet className="w-5 h-5 mr-2 text-purple-500" />
+                      <FileSpreadsheet className="w-5 h-5 mr-2 text-brand-500" />
                       Live Preview & Edit
                     </h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -312,7 +426,7 @@ export default function TopicWiseMock() {
                       className={`
                         px-4 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center
                         ${isEditing 
-                          ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300' 
+                          ? 'bg-brand-100 text-brand-700 dark:bg-brand-900/30 dark:text-brand-300' 
                           : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'}
                       `}
                     >
@@ -322,7 +436,7 @@ export default function TopicWiseMock() {
                     
                     <button
                       onClick={handleDownloadEdited}
-                      className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-semibold shadow-md shadow-green-200 dark:shadow-green-900/20 transition-all flex items-center"
+                      className="px-4 py-2 bg-brand hover:bg-brand-dark text-white rounded-lg text-sm font-semibold shadow-md shadow-brand/20 transition-all flex items-center"
                     >
                       <Download className="w-4 h-4 mr-2" />
                       Download CSV
@@ -344,7 +458,7 @@ export default function TopicWiseMock() {
                     </thead>
                     <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                       {csvData.map((row, rowIndex) => (
-                        <tr key={rowIndex} className="hover:bg-purple-50/30 dark:hover:bg-gray-700/30 transition-colors group">
+                        <tr key={rowIndex} className="hover:bg-brand-50/30 dark:hover:bg-gray-700/30 transition-colors group">
                           <td className="p-4 text-xs text-gray-400 dark:text-gray-500 font-mono border-r border-gray-100 dark:border-gray-700">
                             {rowIndex + 1}
                           </td>
@@ -354,7 +468,7 @@ export default function TopicWiseMock() {
                                 <textarea
                                   value={row[header] || ""}
                                   onChange={(e) => handleCellChange(rowIndex, header, e.target.value)}
-                                  className="w-full h-full min-h-[50px] p-3 bg-transparent border-none focus:ring-2 focus:ring-inset focus:ring-purple-500 dark:focus:ring-purple-400 focus:bg-white dark:focus:bg-gray-600 text-sm text-gray-700 dark:text-gray-200 resize-none overflow-hidden"
+                                  className="w-full h-full min-h-[50px] p-3 bg-transparent border-none focus:ring-2 focus:ring-inset focus:ring-brand-500 dark:focus:ring-brand-400 focus:bg-white dark:focus:bg-gray-600 text-sm text-gray-700 dark:text-gray-200 resize-none overflow-hidden"
                                   rows={1}
                                   style={{ height: '100%' }}
                                 />

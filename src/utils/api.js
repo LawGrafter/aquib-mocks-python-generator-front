@@ -78,21 +78,25 @@ export const generateFullTest = async (difficulty = "moderate") => {
  * @param {number} totalQuestions - Number of questions to generate
  * @returns {Promise<{total_generated: number, final_unique_count: number, csv_url: string, subject: string, pdf_url_en?: string, pdf_url_hi?: string}>}
  */
-export const generateCustomTest = async (subject, topics, difficulty = "moderate", totalQuestions = 10) => {
+export const generateCustomTest = async (subject, topics, difficulty = "moderate", totalQuestions = 10, previousCsvFiles = []) => {
   const url = `${API_BASE_URL}/exam/generate-custom`;
   
   try {
+    const formData = new FormData();
+    formData.append("subject", subject);
+    formData.append("topics", Array.isArray(topics) ? topics.join(", ") : topics);
+    formData.append("difficulty", difficulty);
+    formData.append("total_questions", parseInt(totalQuestions));
+
+    if (previousCsvFiles && previousCsvFiles.length > 0) {
+      previousCsvFiles.forEach((file) => {
+        formData.append("previous_csvs", file);
+      });
+    }
+
     const response = await fetch(url, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ 
-        subject, 
-        topics, 
-        difficulty, 
-        total_questions: parseInt(totalQuestions) 
-      }),
+      body: formData,
     });
 
     if (!response.ok) {

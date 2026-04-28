@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import AppLayout from "@/components/layout/AppLayout";
-import { BookOpen, Star, CheckCircle, ArrowRight, Bookmark } from "lucide-react";
+import { BookOpen, Star, CheckCircle, Bookmark } from "lucide-react";
 
 const syllabusData = {
   "SSC Steno": [
@@ -53,28 +53,124 @@ const syllabusData = {
   ],
   "AHC": [
     {
-      subject: "English",
-      description: "Proficiency in English writing and grammar.",
+      subject: "English (10 Qs)",
+      description: "English language proficiency — vocabulary, grammar & comprehension.",
       color: "cyan",
-      topics: ["Essay Writing", "Letter Writing", "Precis Writing", "Comprehension", "Vocabulary", "Grammar", "Idioms & Phrases"]
+      topics: ["Synonym (2)", "Antonym (2)", "Spot Error (2)", "Direct & Indirect Speech (1)", "Spelling Correction (1)", "Punctuation Error (1)", "Active-Passive Voice (1)"]
     },
     {
-      subject: "Hindi",
-      description: "Proficiency in Hindi writing and grammar.",
+      subject: "Hindi (7 Qs)",
+      description: "Hindi language — grammar, vocabulary & literary devices.",
       color: "amber",
-      topics: ["Essay Writing", "Letter Writing", "Precis Writing", "Comprehension", "Vocabulary", "Grammar", "Idioms & Phrases"]
+      topics: ["Vilom (1)", "Paryayvachi (1)", "Upsarg (1)", "Pratyay (1)", "Sandhi Viched (1)", "Alankar (1)", "Samas (1)"]
     },
     {
-      subject: "General Studies",
-      description: "Knowledge of Indian history, geography, and polity.",
-      color: "rose",
-      topics: ["Indian History", "Indian National Movement", "Indian Geography", "Indian Economy", "Indian Polity", "Current National & International Events"]
+      subject: "Reasoning (10 Qs)",
+      description: "Logical reasoning and analytical ability.",
+      color: "blue",
+      topics: ["Number/Letter Series (1)", "Syllogism (2)", "Alphabet Series (1)", "Odd One Out (1)", "Coding-Decoding (1)", "Dice (1)", "Calendar (1)", "Direction (1)", "Blood Relation (1)"]
     },
     {
-      subject: "Mathematics",
-      description: "Basic mathematical concepts and problem solving.",
+      subject: "Computer (10 Qs)",
+      description: "Computer fundamentals, networking & MS Office.",
+      color: "indigo",
+      topics: ["Full Form (1)", "Networking (1)", "Internet Facts (1)", "Printer (1)", "Computer Generation/Invention (1)", "Topology (1)", "Operating System (1)", "MS Word Shortcut Key (1)", "MS PowerPoint Shortcut Key (1)", "MS Excel Shortcut Key (1)"]
+    },
+    {
+      subject: "Economics (3 Qs)",
+      description: "Indian economy, fiscal policy & banking.",
       color: "emerald",
-      topics: ["Number System", "Whole Numbers", "Decimals & Fractions", "Relationship between Numbers", "Percentage", "Ratio & Proportion", "Average", "Interest", "Profit & Loss", "Discount", "Use of Tables & Graphs", "Mensuration", "Time & Distance", "Ratio & Time", "Time & Work"]
+      topics: ["Book & Author (1)", "Fiscal Policy (1)", "Repo Rate & Reverse Repo Rate (1)"]
+    },
+    {
+      subject: "Environment (3 Qs)",
+      description: "Ecology, wildlife & environmental science.",
+      color: "green",
+      topics: ["Wildlife Sanctuary (1)", "Bird Sanctuary (1)", "Ecological Pyramid (1)"]
+    },
+    {
+      subject: "Polity (5 Qs)",
+      description: "Indian Constitution, governance & political science.",
+      color: "purple",
+      topics: ["Articles of Constitution (2)", "Making of Indian Constitution (1)", "Chief Minister (article-based) (1)", "Constituent Assembly Members (1)"]
+    },
+    {
+      subject: "Indian National Movement (8 Qs)",
+      description: "Freedom struggle, revolts & key personalities.",
+      color: "rose",
+      topics: ["Revolt of 1857 (1)", "Book & Author (1)", "Newspaper Founder (1)", "Movement-based (1)", "Charter Acts (1)", "Governor-General/Lord Chronology (2)", "Civil Disobedience Movement (1)"]
+    },
+    {
+      subject: "Ancient History (3 Qs)",
+      description: "Indus Valley, Vedic period & ancient civilizations.",
+      color: "orange",
+      topics: ["Book & Author (1)", "Indus Valley / Rigveda Mandal (1)", "Jainism (1)"]
+    },
+    {
+      subject: "Medieval History (2 Qs)",
+      description: "Mughal Empire & medieval Indian history.",
+      color: "yellow",
+      topics: ["Book & Author (1)", "Mughal Empire (1)"]
+    },
+    {
+      subject: "Chemistry (2 Qs)",
+      description: "Chemical formulas, metals & everyday chemistry.",
+      color: "teal",
+      topics: ["Formula-based (1)", "Metal/Alloy or Everyday Chemistry (1)"]
+    },
+    {
+      subject: "Biology (3 Qs)",
+      description: "Human body, diseases & life sciences.",
+      color: "lime",
+      topics: ["Disease-based (1)", "Measuring Instrument (1)", "Animal/Plant Kingdom (1)"]
+    },
+    {
+      subject: "Physics (3 Qs)",
+      description: "Laws of physics, energy & measuring instruments.",
+      color: "sky",
+      topics: ["Measuring Instrument (1)", "Law-based (1)", "Kinetic/Potential Energy (1)"]
+    },
+    {
+      subject: "World Geography (4 Qs)",
+      description: "Global geography — oceans, mountains & climate.",
+      color: "violet",
+      topics: ["Ocean Current (1)", "Mountain (1)", "Grassland (1)", "General World Geography (1)"]
+    },
+    {
+      subject: "Indian Geography (4 Qs)",
+      description: "Rivers, mountains, boundaries & physical features of India.",
+      color: "fuchsia",
+      topics: ["Peninsular River (1)", "Strait/Channel — Andaman & Nicobar (1)", "Lesser Himalaya vs Trans Himalaya (1)", "India Boundaries with Neighbors (1)"]
+    },
+    {
+      subject: "Agriculture (3 Qs)",
+      description: "Soil science, green revolution & irrigation.",
+      color: "emerald",
+      topics: ["Soil — Laterite/Red Soil (1)", "Green Revolution (1)", "Irrigation Methods (1)"]
+    },
+    {
+      subject: "Census (3 Qs)",
+      description: "Indian Census facts & statistics.",
+      color: "slate",
+      topics: ["Static/Fact-based Census Questions (3)"]
+    },
+    {
+      subject: "Current Affairs 2025 (4 Qs)",
+      description: "Latest events, schemes & important days.",
+      color: "red",
+      topics: ["Military Exercise (1)", "Important Day & Theme (1)", "Central Government Scheme (1)", "Additional Current Affair (1)"]
+    },
+    {
+      subject: "Art & Culture (3 Qs)",
+      description: "Indian festivals, dance forms & musical traditions.",
+      color: "pink",
+      topics: ["Festival (1)", "Dance (1)", "Gharana (1)"]
+    },
+    {
+      subject: "UP GK (5 Qs)",
+      description: "Uttar Pradesh — geography, history, schemes & personalities.",
+      color: "orange",
+      topics: ["UP State Fact — Capital/District/Division (1)", "UP Historical Place / Heritage Site (1)", "UP Government Scheme / Yojana (1)", "UP Rivers / Geography / Lakes (1)", "UP Famous Personality / Freedom Fighter (1)"]
     }
   ]
 };
@@ -89,7 +185,7 @@ const SyllabusPage = () => {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-100 flex items-center">
-              Syllabus <span className="ml-3 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 p-2 rounded-xl"><BookOpen className="w-6 h-6" /></span>
+              Syllabus <span className="ml-3 bg-brand-50 dark:bg-brand/20 text-brand dark:text-brand-light p-2 rounded-xl"><BookOpen className="w-6 h-6" /></span>
             </h2>
             <p className="mt-2 text-gray-500 dark:text-gray-400">Explore the comprehensive syllabus for various competitive exams.</p>
           </div>
@@ -103,7 +199,7 @@ const SyllabusPage = () => {
               onClick={() => setActiveTab(tab)}
               className={`px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300 ${
                 activeTab === tab
-                  ? "bg-indigo-600 text-white shadow-md shadow-indigo-200 dark:shadow-indigo-900/20 transform scale-105"
+                  ? "bg-brand text-white shadow-md shadow-brand/30 dark:shadow-brand/20 transform scale-105"
                   : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white"
               }`}
             >
@@ -117,7 +213,7 @@ const SyllabusPage = () => {
           {syllabusData[activeTab].map((section, index) => (
             <div 
               key={index}
-              className="group bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-xl hover:border-indigo-100 dark:hover:border-indigo-900 transition-all duration-300 relative overflow-hidden"
+              className="group bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-xl hover:border-brand-100 dark:hover:border-brand/30 transition-all duration-300 relative overflow-hidden"
             >
               {/* Decorative Background Gradient */}
               <div className={`absolute top-0 right-0 w-32 h-32 bg-${section.color}-500/5 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-150 duration-700`}></div>
@@ -133,7 +229,7 @@ const SyllabusPage = () => {
                   </span>
                 </div>
 
-                <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-2 group-hover:text-brand dark:group-hover:text-brand-light transition-colors">
                   {section.subject}
                 </h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
@@ -152,12 +248,6 @@ const SyllabusPage = () => {
                   ))}
                 </div>
 
-                {/* Footer Action */}
-                <div className="mt-8 pt-4 border-t border-gray-100 dark:border-gray-700 flex justify-end">
-                  <button className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 flex items-center gap-1 group-hover:gap-2 transition-all">
-                    View Details <ArrowRight className="w-4 h-4" />
-                  </button>
-                </div>
               </div>
             </div>
           ))}

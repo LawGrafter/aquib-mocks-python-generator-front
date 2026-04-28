@@ -587,7 +587,7 @@ export default function ContentMaker() {
       <div className="max-w-6xl mx-auto space-y-8">
         <div className="flex items-center justify-between">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-gray-100 flex items-center">
-            Content Maker <span className="ml-3 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 p-2 rounded-lg"><FileText className="w-6 h-6" /></span>
+            Content Maker <span className="ml-3 bg-brand-100 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400 p-2 rounded-lg"><FileText className="w-6 h-6" /></span>
           </h2>
         </div>
 
@@ -605,7 +605,7 @@ export default function ContentMaker() {
                 value={topic}
                 onChange={(e) => setTopic(e.target.value)}
                 placeholder="e.g. Revolt of 1857 Modern History"
-                className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 focus:border-blue-500 dark:focus:border-blue-400 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 transition-all"
+                className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:focus:ring-brand-400/20 focus:border-brand-500 dark:focus:border-brand-400 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 transition-all"
               />
             </div>
 
@@ -614,7 +614,7 @@ export default function ContentMaker() {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Upload PDF Files
               </label>
-              <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl p-4 md:p-8 text-center hover:border-blue-500 dark:hover:border-blue-400 transition-colors bg-gray-50/50 dark:bg-gray-700/50 group cursor-pointer relative">
+              <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl p-4 md:p-8 text-center hover:border-brand-500 dark:hover:border-brand-400 transition-colors bg-gray-50/50 dark:bg-gray-700/50 group cursor-pointer relative">
                 <input
                   type="file"
                   multiple
@@ -623,7 +623,7 @@ export default function ContentMaker() {
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                 />
                 <div className="flex flex-col items-center space-y-3 pointer-events-none">
-                  <div className="p-3 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full group-hover:scale-110 transition-transform">
+                  <div className="p-3 bg-brand-100 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400 rounded-full group-hover:scale-110 transition-transform">
                     <Upload className="w-6 h-6" />
                   </div>
                   <div>
@@ -640,9 +640,9 @@ export default function ContentMaker() {
                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Selected Files</p>
                 <div className="space-y-2">
                   {files.map((file, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-blue-50/50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800">
+                    <div key={index} className="flex items-center justify-between p-3 bg-brand-50/50 dark:bg-brand-900/20 rounded-lg border border-brand-100 dark:border-brand-800">
                       <div className="flex items-center space-x-3 overflow-hidden">
-                        <FileText className="w-5 h-5 text-blue-500 dark:text-blue-400 flex-shrink-0" />
+                        <FileText className="w-5 h-5 text-brand-500 dark:text-brand-400 flex-shrink-0" />
                         <span className="text-sm text-gray-700 dark:text-gray-200 truncate">{file.name}</span>
                         <span className="text-xs text-gray-400 dark:text-gray-500">({(file.size / 1024 / 1024).toFixed(2)} MB)</span>
                       </div>
@@ -674,7 +674,7 @@ export default function ContentMaker() {
               className={`w-full py-4 rounded-xl font-bold text-white shadow-lg transition-all duration-300 flex items-center justify-center space-x-2
                 ${isLoading || files.length === 0
                   ? "bg-gray-300 dark:bg-gray-700 cursor-not-allowed shadow-none"
-                  : "bg-gradient-to-r from-blue-600 to-blue-700 hover:shadow-xl hover:scale-[1.01]"
+                  : "bg-gradient-to-r from-brand-600 to-brand-700 hover:shadow-xl hover:scale-[1.01]"
                 }
               `}
             >
@@ -712,7 +712,7 @@ export default function ContentMaker() {
                   onClick={() => setActiveView("preview")}
                   className={`px-4 py-2 rounded-xl text-sm font-semibold transition-colors flex items-center gap-2 ${
                     activeView === "preview"
-                      ? "bg-blue-600 text-white"
+                      ? "bg-brand-600 text-white"
                       : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600"
                   }`}
                 >
@@ -724,7 +724,7 @@ export default function ContentMaker() {
                   onClick={() => setActiveView("editor")}
                   className={`px-4 py-2 rounded-xl text-sm font-semibold transition-colors flex items-center gap-2 ${
                     activeView === "editor"
-                      ? "bg-indigo-600 text-white"
+                      ? "bg-brand-600 text-white"
                       : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600"
                   }`}
                 >
@@ -752,7 +752,7 @@ export default function ContentMaker() {
                       disabled={!editorHtml.trim()}
                       className={`px-4 py-2 rounded-xl text-sm font-semibold transition-colors flex items-center gap-2 ${
                         editorHtml.trim()
-                          ? "bg-indigo-600 hover:bg-indigo-700 text-white"
+                          ? "bg-brand-600 hover:bg-brand-700 text-white"
                           : "bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
                       }`}
                     >
@@ -798,7 +798,7 @@ export default function ContentMaker() {
                           className={`px-4 py-2 rounded-xl text-sm font-semibold transition-colors flex items-center gap-2 ${
                             isExtracting
                               ? "bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
-                              : "bg-blue-600 hover:bg-blue-700 text-white"
+                              : "bg-brand-600 hover:bg-brand-700 text-white"
                           }`}
                         >
                           {isExtracting ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
@@ -827,7 +827,7 @@ export default function ContentMaker() {
                           disabled={!editorHtml.trim()}
                           className={`px-4 py-2 rounded-xl text-sm font-semibold transition-colors flex items-center gap-2 ${
                             editorHtml.trim()
-                              ? "bg-indigo-600 hover:bg-indigo-700 text-white"
+                              ? "bg-brand-600 hover:bg-brand-700 text-white"
                               : "bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
                           }`}
                         >
@@ -1062,7 +1062,7 @@ export default function ContentMaker() {
                       className={`px-4 py-2 rounded-xl text-sm font-semibold transition-colors flex items-center gap-2 ${
                         isExtracting || (!pdfUrl && files.length === 0)
                           ? "bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
-                          : "bg-blue-600 hover:bg-blue-700 text-white"
+                          : "bg-brand-600 hover:bg-brand-700 text-white"
                       }`}
                     >
                       {isExtracting ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
@@ -1107,7 +1107,7 @@ export default function ContentMaker() {
                     <button
                       type="button"
                       onClick={saveEditor}
-                      className="px-4 py-2 rounded-xl text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 text-white transition-colors flex items-center gap-2"
+                      className="px-4 py-2 rounded-xl text-sm font-semibold bg-brand-600 hover:bg-brand-700 text-white transition-colors flex items-center gap-2"
                     >
                       <Save className="w-4 h-4" />
                       Save
@@ -1169,7 +1169,7 @@ export default function ContentMaker() {
                           disabled={!rawText.trim()}
                           className={`px-4 py-2 rounded-xl text-sm font-semibold transition-colors flex items-center gap-2 ${
                             rawText.trim()
-                              ? "bg-blue-600 hover:bg-blue-700 text-white"
+                              ? "bg-brand-600 hover:bg-brand-700 text-white"
                               : "bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
                           }`}
                         >

@@ -153,7 +153,7 @@ export default function ApiFullMock() {
         <div className="flex items-center justify-between">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-gray-100 flex items-center">
             APS/PS Full Mock Generator 
-            <span className="ml-3 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 p-2 rounded-lg">
+            <span className="ml-3 bg-brand-100 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400 p-2 rounded-lg">
               <FileSpreadsheet className="w-6 h-6" />
             </span>
           </h2>
@@ -170,7 +170,7 @@ export default function ApiFullMock() {
                 id="difficulty"
                 value={difficulty}
                 onChange={(e) => setDifficulty(e.target.value)}
-                className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500/20 dark:focus:ring-green-400/20 focus:border-green-500 dark:focus:border-green-400 text-gray-800 dark:text-gray-100 transition-all cursor-pointer"
+                className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:focus:ring-brand-400/20 focus:border-brand-500 dark:focus:border-brand-400 text-gray-800 dark:text-gray-100 transition-all cursor-pointer"
               >
                 <option value="easy">Easy</option>
                 <option value="moderate">Moderate</option>
@@ -184,7 +184,7 @@ export default function ApiFullMock() {
               className={`w-full md:w-auto px-8 py-3 rounded-xl font-bold text-white shadow-lg transition-all duration-300 flex items-center justify-center space-x-2
                 ${isLoading 
                   ? "bg-gray-400 dark:bg-gray-600 cursor-not-allowed shadow-none" 
-                  : "bg-gradient-to-r from-green-600 to-green-700 hover:shadow-xl hover:scale-[1.02]"
+                  : "bg-gradient-to-r from-brand-600 to-brand-700 hover:shadow-xl hover:scale-[1.02]"
                 }
               `}
             >
@@ -211,29 +211,29 @@ export default function ApiFullMock() {
           
           {isLoading && (
             <div className="mt-6 space-y-4 animate-in fade-in slide-in-from-top-2">
-              <div className="p-6 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800">
+              <div className="p-6 bg-brand-50 dark:bg-brand-900/20 rounded-xl border border-brand-100 dark:border-brand-800">
                 <div className="flex items-start space-x-3 mb-4">
-                  <Loader2 className="w-5 h-5 text-blue-600 dark:text-blue-400 animate-spin flex-shrink-0 mt-0.5" />
+                  <Loader2 className="w-5 h-5 text-brand-600 dark:text-brand-400 animate-spin flex-shrink-0 mt-0.5" />
                   <div className="flex-1">
-                    <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-1">Generation in Progress</h4>
-                    <p className="text-sm text-blue-700 dark:text-blue-300">{progressMessage}</p>
+                    <h4 className="font-semibold text-brand-900 dark:text-brand-100 mb-1">Generation in Progress</h4>
+                    <p className="text-sm text-brand-700 dark:text-brand-300">{progressMessage}</p>
                   </div>
                 </div>
                 
                 <div className="space-y-2">
-                  <div className="flex justify-between text-xs text-blue-600 dark:text-blue-400 font-medium">
+                  <div className="flex justify-between text-xs text-brand-600 dark:text-brand-400 font-medium">
                     <span>Progress</span>
                     <span>Est. {Math.floor(estimatedTime / 60)}:{String(estimatedTime % 60).padStart(2, '0')} remaining</span>
                   </div>
-                  <div className="w-full bg-blue-200 dark:bg-blue-800 rounded-full h-2 overflow-hidden">
+                  <div className="w-full bg-brand-200 dark:bg-brand-800 rounded-full h-2 overflow-hidden">
                     <div 
-                      className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all duration-1000 ease-out"
+                      className="h-full bg-gradient-to-r from-brand-500 to-brand-600 rounded-full transition-all duration-1000 ease-out"
                       style={{ width: `${Math.min(100, ((300 - estimatedTime) / 300) * 100)}%` }}
                     ></div>
                   </div>
                 </div>
                 
-                <div className="mt-4 p-3 bg-white dark:bg-gray-800 rounded-lg border border-blue-100 dark:border-blue-700">
+                <div className="mt-4 p-3 bg-white dark:bg-gray-800 rounded-lg border border-brand-100 dark:border-brand-700">
                   <p className="text-xs text-gray-600 dark:text-gray-400">
                     <strong className="text-gray-800 dark:text-gray-200">What's happening:</strong> Generating 100 unique questions across 18 subjects using AI, then deduplicating and validating each question. This typically takes 3-5 minutes.
                   </p>
@@ -250,7 +250,7 @@ export default function ApiFullMock() {
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center space-x-4 transition-colors">
-                <div className="p-3 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full">
+                <div className="p-3 bg-brand-100 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400 rounded-full">
                   <CheckCircle className="w-6 h-6" />
                 </div>
                 <div>
@@ -260,7 +260,7 @@ export default function ApiFullMock() {
               </div>
 
               <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center space-x-4 transition-colors">
-                <div className="p-3 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-full">
+                <div className="p-3 bg-brand-100 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400 rounded-full">
                   <FileSpreadsheet className="w-6 h-6" />
                 </div>
                 <div>
@@ -304,7 +304,7 @@ export default function ApiFullMock() {
                 <div className="flex items-center space-x-2">
                   <Edit3 className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                   <h3 className="font-bold text-gray-800 dark:text-gray-100">Live Preview & Edit</h3>
-                  <span className="text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-full font-medium">
+                  <span className="text-xs px-2 py-1 bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-400 rounded-full font-medium">
                     {csvData.length} Rows
                   </span>
                 </div>
@@ -315,7 +315,7 @@ export default function ApiFullMock() {
                     className={`px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition-colors flex items-center ${
                       isValidating 
                         ? "bg-gray-400 dark:bg-gray-600 cursor-not-allowed" 
-                        : "bg-blue-600 hover:bg-blue-700 text-white"
+                        : "bg-brand-600 hover:bg-brand-700 text-white"
                     }`}
                   >
                     {isValidating ? (
@@ -332,7 +332,7 @@ export default function ApiFullMock() {
                   </button>
                   <button
                     onClick={handleDownloadEdited}
-                    className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-semibold shadow-sm transition-colors flex items-center"
+                    className="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-semibold shadow-sm transition-colors flex items-center"
                   >
                     <Save className="w-4 h-4 mr-2" />
                     Download CSV
@@ -354,7 +354,7 @@ export default function ApiFullMock() {
                   </thead>
                   <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                     {csvData.map((row, rowIndex) => (
-                      <tr key={rowIndex} className="hover:bg-blue-50/30 dark:hover:bg-gray-700/30 transition-colors group">
+                      <tr key={rowIndex} className="hover:bg-brand-50/30 dark:hover:bg-gray-700/30 transition-colors group">
                         <td className="p-4 text-xs text-gray-400 dark:text-gray-500 font-mono border-r border-gray-100 dark:border-gray-700">
                           {rowIndex + 1}
                         </td>
@@ -363,7 +363,7 @@ export default function ApiFullMock() {
                             <textarea
                               value={row[header] || ""}
                               onChange={(e) => handleCellChange(rowIndex, header, e.target.value)}
-                              className="w-full h-full min-h-[50px] p-3 bg-transparent border-none focus:ring-2 focus:ring-inset focus:ring-blue-500 dark:focus:ring-blue-400 focus:bg-white dark:focus:bg-gray-600 text-sm text-gray-700 dark:text-gray-200 resize-none overflow-hidden"
+                              className="w-full h-full min-h-[50px] p-3 bg-transparent border-none focus:ring-2 focus:ring-inset focus:ring-brand-500 dark:focus:ring-brand-400 focus:bg-white dark:focus:bg-gray-600 text-sm text-gray-700 dark:text-gray-200 resize-none overflow-hidden"
                               rows={1}
                               style={{ height: '100%' }}
                             />
@@ -381,7 +381,7 @@ export default function ApiFullMock() {
               <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 md:p-8 transition-colors animate-in fade-in slide-in-from-bottom-4">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 flex items-center">
-                    <ShieldCheck className="w-5 h-5 mr-2 text-blue-600 dark:text-blue-400" />
+                    <ShieldCheck className="w-5 h-5 mr-2 text-brand-600 dark:text-brand-400" />
                     AI Validation Results
                   </h3>
                   <button
@@ -394,12 +394,12 @@ export default function ApiFullMock() {
 
                 {/* Summary Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                  <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-100 dark:border-green-800">
+                  <div className="p-4 bg-brand-50 dark:bg-brand-900/20 rounded-xl border border-brand-100 dark:border-brand-800">
                     <div className="flex items-center space-x-3">
-                      <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
+                      <CheckCircle className="w-8 h-8 text-brand-600 dark:text-brand-400" />
                       <div>
-                        <p className="text-sm text-green-600 dark:text-green-400 font-medium">Correct Questions</p>
-                        <p className="text-2xl font-bold text-green-700 dark:text-green-300">{validationResults.summary?.correct_questions || 0}</p>
+                        <p className="text-sm text-brand-600 dark:text-brand-400 font-medium">Correct Questions</p>
+                        <p className="text-2xl font-bold text-brand-700 dark:text-brand-300">{validationResults.summary?.correct_questions || 0}</p>
                       </div>
                     </div>
                   </div>
@@ -461,7 +461,7 @@ export default function ApiFullMock() {
                         className={`p-4 rounded-lg border ${
                           item.has_issues 
                             ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-100 dark:border-yellow-800' 
-                            : 'bg-green-50 dark:bg-green-900/20 border-green-100 dark:border-green-800'
+                            : 'bg-brand-50 dark:bg-brand-900/20 border-brand-100 dark:border-brand-800'
                         }`}
                       >
                         <div className="flex items-start justify-between mb-2">
@@ -469,7 +469,7 @@ export default function ApiFullMock() {
                             {item.has_issues ? (
                               <AlertTriangle className="w-4 h-4 text-yellow-600 dark:text-yellow-400 flex-shrink-0" />
                             ) : (
-                              <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400 flex-shrink-0" />
+                              <CheckCircle className="w-4 h-4 text-brand-600 dark:text-brand-400 flex-shrink-0" />
                             )}
                             <span className="text-sm font-medium text-gray-800 dark:text-gray-100">
                               Question #{item.question_number}
@@ -477,7 +477,7 @@ export default function ApiFullMock() {
                           </div>
                           <span className={`text-xs px-2 py-1 rounded-full ${
                             item.confidence === 'high' 
-                              ? 'bg-green-100 dark:bg-green-800 text-green-700 dark:text-green-300'
+                              ? 'bg-brand-100 dark:bg-brand-800 text-brand-700 dark:text-brand-300'
                               : item.confidence === 'medium'
                               ? 'bg-yellow-100 dark:bg-yellow-800 text-yellow-700 dark:text-yellow-300'
                               : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
