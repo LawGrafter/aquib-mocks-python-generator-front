@@ -193,3 +193,65 @@ export const generateAHCChallenge = async (difficulty = "moderate", previousCsvF
     throw error;
   }
 };
+
+/**
+ * Generates AHC Custom exam with selected subjects and question count
+ * @param {string} difficulty - Difficulty level
+ * @param {string[]} subjects - Array of subject names
+ * @param {number} totalQuestions - Total number of questions to generate
+ * @param {File[]} previousCsvFiles - Optional CSV files for deduplication
+ */
+export const generateAHCCustom = async (difficulty = "moderate", subjects = [], totalQuestions = 10, previousCsvFiles = []) => {
+  const url = `${API_BASE_URL}/ahc-challenge/generate-custom`;
+  
+  try {
+    const formData = new FormData();
+    formData.append("difficulty", difficulty);
+    formData.append("subjects", subjects.join(","));
+    formData.append("total_questions", totalQuestions.toString());
+    
+    if (previousCsvFiles && previousCsvFiles.length > 0) {
+      previousCsvFiles.forEach((file) => {
+        formData.append("previous_csvs", file);
+      });
+    }
+
+    const response = await fetch(url, {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status} ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error generating AHC Custom:", error);
+    throw error;
+  }
+};
+
+/**
+ * Uses AI to edit/modify a single question based on a user prompt
+ */
+export const aiEditQuestion = async (data) => {
+  const url = `${API_BASE_URL}/ahc-challenge/ai-edit`;
+  
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status} ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error AI editing question:", error);
+    throw error;
+  }
+};

@@ -17,13 +17,27 @@ import {
   Target,
   Upload,
   FileText,
-  Trash2
+  Trash2,
+  Pencil,
+  X,
+  Sparkles,
+  Send
 } from "lucide-react";
-import { generateAHCChallenge, fetchCsvContent, validateQuestionsWithAI } from "@/utils/api";
+import { generateAHCChallenge, generateAHCCustom, fetchCsvContent, validateQuestionsWithAI, aiEditQuestion } from "@/utils/api";
 import Papa from "papaparse";
 
+const ALL_SUBJECTS = [
+  "English", "Hindi", "Reasoning", "Computer", "Economics", "Environment",
+  "Polity", "Indian National Movement", "Ancient History", "Medieval History",
+  "Chemistry", "Biology", "Physics", "World Geography", "Indian Geography",
+  "Agriculture", "Census", "Current Affairs 2025", "Art & Culture", "UP GK"
+];
+
 export default function AHCChallenge() {
+  const [mode, setMode] = useState("default"); // "default" or "custom"
   const [difficulty, setDifficulty] = useState("moderate");
+  const [selectedSubjects, setSelectedSubjects] = useState([]);
+  const [totalQuestions, setTotalQuestions] = useState(20);
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [csvData, setCsvData] = useState([]);
@@ -36,7 +50,66 @@ export default function AHCChallenge() {
   const [showValidation, setShowValidation] = useState(false);
   const [previousCsvFiles, setPreviousCsvFiles] = useState([]);
 
+  // Edit modal state
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editRowIndex, setEditRowIndex] = useState(null);
+  const [editForm, setEditForm] = useState({});
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [isAiEditing, setIsAiEditing] = useState(false);
+
+  const openEditModal = (rowIndex) => {
+    const row = csvData[rowIndex];
+    setEditRowIndex(rowIndex);
+    setEditForm({ ...row });
+    setAiPrompt("");
+    setEditModalOpen(true);
+  };
+
+  const handleEditSave = () => {
+    const newData = [...csvData];
+    newData[editRowIndex] = { ...editForm };
+    setCsvData(newData);
+    setEditModalOpen(false);
+  };
+
+  const handleAiEdit = async () => {
+    if (!aiPrompt.trim()) return;
+    setIsAiEditing(true);
+    try {
+      const result = await aiEditQuestion({
+        question: editForm["Question"] || "",
+        option_a: editForm["Option A"] || "",
+        option_b: editForm["Option B"] || "",
+        option_c: editForm["Option C"] || "",
+        option_d: editForm["Option D"] || "",
+        correct_answer: editForm["Correct Answer"] || "",
+        prompt: aiPrompt,
+        subject: editForm["Subject"] || "",
+        topic: editForm["Topic"] || "",
+      });
+      setEditForm((prev) => ({
+        ...prev,
+        "Question": result.question,
+        "Option A": result.option_a,
+        "Option B": result.option_b,
+        "Option C": result.option_c,
+        "Option D": result.option_d,
+        "Correct Answer": result.correct_answer,
+      }));
+      setAiPrompt("");
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsAiEditing(false);
+    }
+  };
+
   const handleGenerate = async () => {
+    if (mode === "custom" && selectedSubjects.length === 0) {
+      setError("Please select at least one subject for custom mode.");
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
     setResult(null);
@@ -44,24 +117,39 @@ export default function AHCChallenge() {
     setCsvHeaders([]);
     setValidationResults(null);
     setShowValidation(false);
-    setProgressMessage("Initializing AHC Challenge 2026 generation...");
-    setEstimatedTime(420); // 7 minutes estimate for 100 questions
+
+    const isCustom = mode === "custom";
+    const qCount = isCustom ? totalQuestions : 100;
+    const estSeconds = isCustom ? Math.max(60, Math.ceil(qCount * 4.2)) : 420;
+
+    setProgressMessage(isCustom
+      ? `Initializing custom generation (${qCount} questions, ${selectedSubjects.length} subjects)...`
+      : "Initializing AHC Challenge 2026 generation..."
+    );
+    setEstimatedTime(estSeconds);
 
     // Simulate progress updates
-    const progressSteps = [
-      { time: 3000, message: "Generating English questions (Synonym, Antonym, Grammar)..." },
-      { time: 10000, message: "Generating Hindi questions (Vilom, Paryayvachi, Sandhi)..." },
-      { time: 20000, message: "Generating Reasoning questions (Series, Syllogism, Coding)..." },
-      { time: 35000, message: "Generating Computer questions (Shortcuts, Networking)..." },
-      { time: 50000, message: "Generating History questions (Ancient, Medieval, National Movement)..." },
-      { time: 70000, message: "Generating Geography questions (Indian & World)..." },
-      { time: 90000, message: "Generating Science questions (Physics, Chemistry, Biology)..." },
-      { time: 110000, message: "Generating Polity & Economics questions..." },
-      { time: 130000, message: "Generating Current Affairs 2025 questions..." },
-      { time: 150000, message: "Generating Environment, Agriculture & Census questions..." },
-      { time: 170000, message: "Generating Art & Culture questions..." },
-      { time: 190000, message: "Finalizing all 100 questions..." },
-    ];
+    const progressSteps = isCustom
+      ? [
+          { time: 3000, message: `Generating questions for ${selectedSubjects.slice(0, 3).join(", ")}...` },
+          { time: 15000, message: "Processing question types and formatting..." },
+          { time: 30000, message: "Deduplicating and validating..." },
+          { time: 50000, message: "Finalizing questions..." },
+        ]
+      : [
+          { time: 3000, message: "Generating English questions (Synonym, Antonym, Grammar)..." },
+          { time: 10000, message: "Generating Hindi questions (Vilom, Paryayvachi, Sandhi)..." },
+          { time: 20000, message: "Generating Reasoning questions (Series, Syllogism, Coding)..." },
+          { time: 35000, message: "Generating Computer questions (Shortcuts, Networking)..." },
+          { time: 50000, message: "Generating History questions (Ancient, Medieval, National Movement)..." },
+          { time: 70000, message: "Generating Geography questions (Indian & World)..." },
+          { time: 90000, message: "Generating Science questions (Physics, Chemistry, Biology)..." },
+          { time: 110000, message: "Generating Polity & Economics questions..." },
+          { time: 130000, message: "Generating Current Affairs 2025 questions..." },
+          { time: 150000, message: "Generating Environment, Agriculture & Census questions..." },
+          { time: 170000, message: "Generating Art & Culture questions..." },
+          { time: 190000, message: "Finalizing all 100 questions..." },
+        ];
 
     const progressTimers = progressSteps.map(({ time, message }) =>
       setTimeout(() => setProgressMessage(message), time)
@@ -71,13 +159,14 @@ export default function AHCChallenge() {
     const startTime = Date.now();
     const countdownInterval = setInterval(() => {
       const elapsed = Math.floor((Date.now() - startTime) / 1000);
-      const remaining = Math.max(0, 420 - elapsed);
+      const remaining = Math.max(0, estSeconds - elapsed);
       setEstimatedTime(remaining);
     }, 1000);
 
     try {
-      // Generate the test (with optional CSV dedup files)
-      const data = await generateAHCChallenge(difficulty, previousCsvFiles);
+      const data = isCustom
+        ? await generateAHCCustom(difficulty, selectedSubjects, totalQuestions, previousCsvFiles)
+        : await generateAHCChallenge(difficulty, previousCsvFiles);
       
       // Clear all timers
       progressTimers.forEach(timer => clearTimeout(timer));
@@ -275,7 +364,108 @@ export default function AHCChallenge() {
         </div>
 
         {/* Control Panel */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 md:p-8 transition-colors duration-300">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 md:p-8 transition-colors duration-300 space-y-6">
+          
+          {/* Mode Toggle */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Generation Mode</label>
+            <div className="flex bg-gray-100 dark:bg-gray-700 rounded-xl p-1 w-full md:w-80">
+              <button
+                onClick={() => setMode("default")}
+                className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 ${
+                  mode === "default"
+                    ? "bg-brand text-white shadow-md"
+                    : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                }`}
+              >
+                Default (100 Qs)
+              </button>
+              <button
+                onClick={() => setMode("custom")}
+                className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 ${
+                  mode === "custom"
+                    ? "bg-brand text-white shadow-md"
+                    : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                }`}
+              >
+                Custom
+              </button>
+            </div>
+          </div>
+
+          {/* Custom Mode Options */}
+          {mode === "custom" && (
+            <div className="space-y-5 animate-in fade-in slide-in-from-top-2 duration-300 border-t border-gray-100 dark:border-gray-700 pt-5">
+              
+              {/* Subject Multi-Select */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Select Subjects
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setSelectedSubjects([...ALL_SUBJECTS])}
+                      className="text-xs text-brand hover:text-brand-dark font-medium"
+                    >
+                      Select All
+                    </button>
+                    <span className="text-gray-300 dark:text-gray-600">|</span>
+                    <button
+                      onClick={() => setSelectedSubjects([])}
+                      className="text-xs text-red-500 hover:text-red-600 font-medium"
+                    >
+                      Clear
+                    </button>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                  {ALL_SUBJECTS.map((subj) => {
+                    const isSelected = selectedSubjects.includes(subj);
+                    return (
+                      <button
+                        key={subj}
+                        onClick={() => {
+                          setSelectedSubjects((prev) =>
+                            isSelected ? prev.filter((s) => s !== subj) : [...prev, subj]
+                          );
+                        }}
+                        className={`px-3 py-2 text-xs font-medium rounded-lg border transition-all duration-200 text-left ${
+                          isSelected
+                            ? "bg-brand-50 dark:bg-brand/20 border-brand text-brand dark:text-brand-light"
+                            : "bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-brand/50"
+                        }`}
+                      >
+                        {subj}
+                      </button>
+                    );
+                  })}
+                </div>
+                {selectedSubjects.length > 0 && (
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                    {selectedSubjects.length} subject{selectedSubjects.length !== 1 ? "s" : ""} selected
+                  </p>
+                )}
+              </div>
+
+              {/* Total Questions */}
+              <div className="w-full md:w-1/3">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Total Questions
+                </label>
+                <input
+                  type="number"
+                  min={1}
+                  max={200}
+                  value={totalQuestions}
+                  onChange={(e) => setTotalQuestions(Math.max(1, Math.min(200, parseInt(e.target.value) || 1)))}
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand text-gray-800 dark:text-gray-100 transition-all"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Difficulty + Generate Button */}
           <div className="flex flex-col md:flex-row gap-6 items-end">
             <div className="w-full md:w-1/3">
               <label htmlFor="difficulty" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -311,7 +501,7 @@ export default function AHCChallenge() {
               ) : (
                 <>
                   <Play className="w-5 h-5 fill-current" />
-                  <span>Generate 100 Questions</span>
+                  <span>{mode === "custom" ? `Generate ${totalQuestions} Questions` : "Generate 100 Questions"}</span>
                 </>
               )}
             </button>
@@ -343,14 +533,17 @@ export default function AHCChallenge() {
                   <div className="w-full bg-brand-100 dark:bg-brand-800 rounded-full h-2 overflow-hidden">
                     <div 
                       className="h-full bg-gradient-to-r from-brand to-brand-light rounded-full transition-all duration-1000 ease-out"
-                      style={{ width: `${Math.min(100, ((420 - estimatedTime) / 420) * 100)}%` }}
+                      style={{ width: `${Math.min(100, estimatedTime > 0 ? ((1 - estimatedTime / (mode === "custom" ? Math.max(60, Math.ceil(totalQuestions * 4.2)) : 420)) * 100) : 0)}%` }}
                     ></div>
                   </div>
                 </div>
                 
                 <div className="mt-4 p-3 bg-white dark:bg-gray-800 rounded-lg border border-brand-100 dark:border-brand-700">
                   <p className="text-xs text-gray-600 dark:text-gray-400">
-                    <strong className="text-gray-800 dark:text-gray-200">What's happening:</strong> Generating 100 questions across 19 subjects with exact syllabus breakdown. Each subject has specific question types (e.g., Synonym, Antonym, Syllogism, etc.). This typically takes 5-7 minutes.
+                    <strong className="text-gray-800 dark:text-gray-200">What's happening:</strong> {mode === "custom" 
+                      ? `Generating ${totalQuestions} questions across ${selectedSubjects.length} selected subject(s). Questions are distributed proportionally based on the AHC syllabus weightage.`
+                      : "Generating 100 questions across 19 subjects with exact syllabus breakdown. Each subject has specific question types (e.g., Synonym, Antonym, Syllogism, etc.). This typically takes 5-7 minutes."
+                    }
                   </p>
                 </div>
               </div>
@@ -370,7 +563,7 @@ export default function AHCChallenge() {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500 dark:text-gray-400 font-medium uppercase">Total Questions</p>
-                  <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">{result.final_count} / 100</p>
+                  <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">{result.final_count} / {mode === "custom" ? totalQuestions : 100}</p>
                 </div>
               </div>
 
@@ -459,6 +652,7 @@ export default function AHCChallenge() {
                   <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0 z-10 shadow-sm">
                     <tr>
                       <th className="p-4 w-12 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-gray-600">#</th>
+                      <th className="p-4 w-16 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-gray-600">Edit</th>
                       {csvHeaders.map((header) => (
                         <th key={header} className="p-4 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-gray-600 min-w-[150px]">
                           {header}
@@ -472,15 +666,18 @@ export default function AHCChallenge() {
                         <td className="p-4 text-xs text-gray-400 dark:text-gray-500 font-mono border-r border-gray-100 dark:border-gray-700">
                           {rowIndex + 1}
                         </td>
+                        <td className="p-2 border-r border-gray-100 dark:border-gray-700 text-center">
+                          <button
+                            onClick={() => openEditModal(rowIndex)}
+                            className="p-2 text-brand hover:bg-brand-50 dark:hover:bg-brand/10 rounded-lg transition-colors"
+                            title="Edit question"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </button>
+                        </td>
                         {csvHeaders.map((header) => (
-                          <td key={`${rowIndex}-${header}`} className="p-0 border-r border-gray-100 dark:border-gray-700 relative">
-                            <textarea
-                              value={row[header] || ""}
-                              onChange={(e) => handleCellChange(rowIndex, header, e.target.value)}
-                              className="w-full h-full min-h-[50px] p-3 bg-transparent border-none focus:ring-2 focus:ring-inset focus:ring-brand dark:focus:ring-brand-light focus:bg-white dark:focus:bg-gray-600 text-sm text-gray-700 dark:text-gray-200 resize-none overflow-hidden"
-                              rows={1}
-                              style={{ height: '100%' }}
-                            />
+                          <td key={`${rowIndex}-${header}`} className="p-3 border-r border-gray-100 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-200 max-w-[250px]">
+                            <span className="line-clamp-3">{row[header] || ""}</span>
                           </td>
                         ))}
                       </tr>
@@ -639,6 +836,140 @@ export default function AHCChallenge() {
         )}
 
       </div>
+
+      {/* Edit Question Modal */}
+      {editModalOpen && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-gray-700">
+              <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 flex items-center">
+                <Pencil className="w-5 h-5 mr-2 text-brand" />
+                Edit Question #{editRowIndex + 1}
+              </h3>
+              <button
+                onClick={() => setEditModalOpen(false)}
+                className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-5 space-y-4">
+              
+              {/* Subject & Topic (read-only info) */}
+              {(editForm["Subject"] || editForm["Topic"]) && (
+                <div className="flex gap-3">
+                  {editForm["Subject"] && (
+                    <span className="text-xs px-3 py-1 bg-brand-50 dark:bg-brand/20 text-brand dark:text-brand-light rounded-full font-medium">
+                      {editForm["Subject"]}
+                    </span>
+                  )}
+                  {editForm["Topic"] && (
+                    <span className="text-xs px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-full font-medium">
+                      {editForm["Topic"]}
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {/* Question */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Question</label>
+                <textarea
+                  value={editForm["Question"] || ""}
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, "Question": e.target.value }))}
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-sm text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all resize-none"
+                  rows={3}
+                />
+              </div>
+
+              {/* Options Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {["Option A", "Option B", "Option C", "Option D"].map((opt) => (
+                  <div key={opt}>
+                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{opt}</label>
+                    <input
+                      type="text"
+                      value={editForm[opt] || ""}
+                      onChange={(e) => setEditForm((prev) => ({ ...prev, [opt]: e.target.value }))}
+                      className="w-full px-3 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-sm text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all"
+                    />
+                  </div>
+                ))}
+              </div>
+
+              {/* Correct Answer */}
+              <div className="w-1/2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Correct Answer</label>
+                <select
+                  value={editForm["Correct Answer"] || ""}
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, "Correct Answer": e.target.value }))}
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-sm text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all cursor-pointer"
+                >
+                  <option value="a">A</option>
+                  <option value="b">B</option>
+                  <option value="c">C</option>
+                  <option value="d">D</option>
+                </select>
+              </div>
+
+              {/* AI Edit Section */}
+              <div className="border-t border-gray-100 dark:border-gray-700 pt-4 mt-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+                  <Sparkles className="w-4 h-4 mr-1.5 text-brand" />
+                  Edit with AI
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={aiPrompt}
+                    onChange={(e) => setAiPrompt(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter" && !isAiEditing) handleAiEdit(); }}
+                    placeholder="e.g. Make this question harder, Change options to Hindi..."
+                    className="flex-1 px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-sm text-gray-800 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all"
+                  />
+                  <button
+                    onClick={handleAiEdit}
+                    disabled={isAiEditing || !aiPrompt.trim()}
+                    className={`px-4 py-3 rounded-xl font-semibold text-white flex items-center gap-2 transition-all ${
+                      isAiEditing || !aiPrompt.trim()
+                        ? "bg-gray-300 dark:bg-gray-600 cursor-not-allowed"
+                        : "bg-brand hover:bg-brand-dark shadow-md"
+                    }`}
+                  >
+                    {isAiEditing ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Send className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
+                <p className="text-xs text-gray-400 mt-1.5">Ask AI to modify this question. Press Enter or click Send.</p>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="flex items-center justify-end gap-3 p-5 border-t border-gray-100 dark:border-gray-700">
+              <button
+                onClick={() => setEditModalOpen(false)}
+                className="px-5 py-2.5 text-sm font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleEditSave}
+                className="px-6 py-2.5 text-sm font-semibold text-white bg-brand hover:bg-brand-dark rounded-xl shadow-md transition-all"
+              >
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </AppLayout>
   );
 }
